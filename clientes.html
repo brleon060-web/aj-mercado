@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Clientes</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:Arial;}
+input, button { margin:5px; padding:10px; border-radius:8px; }
+</style>
+</head>
+
+<body>
+
+<button onclick="voltar()">⬅ Voltar</button>
+
+<h2>Clientes</h2>
+
+<input id="nome">
+<button id="add">Adicionar</button>
+
+<div id="lista"></div>
+
+<script>
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+document.getElementById("add").addEventListener("click", ()=>{
+  let nome = document.getElementById("nome").value.trim();
+  if(!nome) return;
+
+  clientes.push(nome);
+  localStorage.setItem("clientes", JSON.stringify(clientes));
+  atualizar();
+});
+
+function atualizar(){
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  clientes.forEach(c=>{
+    let p = document.createElement("p");
+    p.textContent = c;
+    lista.appendChild(p);
+  });
+}
+
+function voltar(){
+  window.location.href = "index.html";
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
