@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>AJ Mercado</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f0f1a;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  color: #b366ff;
+}
+
+input, select {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(45deg, purple, violet);
+  color: white;
+  cursor: pointer;
+}
+
+.card {
+  background: #1c1c2e;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px purple;
+}
+
+img {
+  width: 60px;
+  border-radius: 8px;
+}
+
+.fiado { color: red; }
+.pago { color: lime; }
+</style>
+
+</head>
+
+<body>
+
+<h1>🛒 AJ Mercado (Allyson & Junior)</h1>
+
+<h2>Cliente</h2>
+<input id="clienteNome" placeholder="Nome">
+<button onclick="addCliente()">Adicionar</button>
+
+<h2>Produto</h2>
+<input id="produtoNome" placeholder="Nome">
+<input id="produtoPreco" type="number" placeholder="Preço">
+<input id="produtoQtd" type="number" placeholder="Quantidade">
+<button onclick="addProduto()">Adicionar</button>
+
+<h2>Venda</h2>
+<select id="clientes"></select>
+<select id="produtos"></select>
+<button onclick="addVenda('pago')">Pago</button>
+<button onclick="addVenda('fiado')">Fiado</button>
+
+<h2>Clientes</h2>
+<div id="clientesLista"></div>
+
+<script>
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+let vendas = JSON.parse(localStorage.getItem("vendas")) || [];
+
+function salvar() {
+  localStorage.setItem("clientes", JSON.stringify(clientes));
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  localStorage.setItem("vendas", JSON.stringify(vendas));
+}
+
+function buscarImagem(nome) {
+  return `https://source.unsplash.com/100x100/?${nome}`;
+}
+
+function addCliente() {
+  let nome = clienteNome.value;
+  if (!nome) return;
+  clientes.push(nome);
+  salvar();
+  atualizar();
+}
+
+function addProduto() {
+  let nome = produtoNome.value;
+  let preco = parseFloat(produtoPreco.value);
+  let qtd = parseInt(produtoQtd.value);
+
+  produtos.push({
+    nome,
+    preco,
+    qtd,
+    img: buscarImagem(nome)
+  });
+
+  salvar();
+  atualizar();
+}
+
+function addVenda(tipo) {
+  let cliente = clientesSelect.value;
+  let index = produtosSelect.value;
+  let p = produtos[index];
+
+  if (p.qtd <= 0) {
+    alert("Sem estoque!");
+    return;
+  }
+
+  p.qtd--;
+
+  vendas.push({
+    cliente,
+    produto: p.nome,
+    preco: p.preco,
+    img: p.img,
+    tipo
+  });
+
+  salvar();
+  atualizar();
+}
+
+function removerVenda(i) {
+  vendas.splice(i, 1);
+  salvar();
+  atualizar();
+}
+
+function adicionarEstoque(i) {
+  produtos[i].qtd += 1;
+  salvar();
+  atualizar();
+}
+
+function mudarPreco(i) {
+  let novo = prompt("Novo preço:");
+  if (novo) {
+    produtos[i].preco = parseFloat(novo);
+    salvar();
+    atualizar();
+  }
+}
+
+function atualizar() {
+  clientesSelect.innerHTML = "";
+  produtosSelect.innerHTML = "";
+  clientesLista.innerHTML = "";
+
+  clientes.forEach(c => {
+    let o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    clientesSelect.appendChild(o);
+  });
+
+  produtos.forEach((p, i) => {
+    let o = document.createElement("option");
+    o.value = i;
+    o.textContent = `${p.nome} (R$${p.preco}) [${p.qtd}]`;
+    produtosSelect.appendChild(o);
+  });
+
+  clientes.forEach(c => {
+    let div = document.createElement("div");
+    div.className = "card";
+
+    let total = 0;
+
+    let lista = vendas
+      .map((v, i) => ({...v, i}))
+      .filter(v => v.cliente === c);
+
+    lista.forEach(v => {
+      if (v.tipo === "fiado") total += v.preco;
+    });
+
+    div.innerHTML = `<h3>${c}</h3><p>Total Fiado: R$${total.toFixed(2)}</p>`;
+
+    lista.forEach(v => {
+      div.innerHTML += `
+        <p>
+          <img src="${v.img}">
+          ${v.produto} - R$${v.preco}
+          <b class="${v.tipo}">${v.tipo}</b>
+          <button onclick="removerVenda(${v.i})">❌</button>
+        </p>
+      `;
+    });
+
+    clientesLista.appendChild(div);
+  });
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
