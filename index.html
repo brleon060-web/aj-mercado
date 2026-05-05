@@ -14,7 +14,7 @@ body {
 
 h1 { color: #b366ff; }
 
-input, select {
+input, select, button {
   padding: 8px;
   margin: 5px;
   border-radius: 8px;
@@ -22,10 +22,6 @@ input, select {
 }
 
 button {
-  padding: 8px;
-  margin: 5px;
-  border-radius: 8px;
-  border: none;
   background: purple;
   color: white;
   cursor: pointer;
@@ -41,29 +37,28 @@ button {
 .fiado { color: red; }
 .pago { color: lime; }
 </style>
-
 </head>
+
 <body>
 
-<h1>🛒 AJ Mercado (Allyson & Junior)</h1>
+<h1>🛒 AJ Mercado</h1>
 
 <h2>Cliente</h2>
-<input id="clienteNome" placeholder="Nome do cliente">
-<button onclick="addCliente()">Adicionar</button>
+<input id="clienteNome">
+<button id="btnCliente">Adicionar</button>
 
 <h2>Produto</h2>
 <input id="produtoNome" placeholder="Nome">
 <input id="produtoPreco" type="number" placeholder="Preço">
-<input id="produtoQtd" type="number" placeholder="Quantidade">
-<button onclick="addProduto()">Adicionar</button>
+<input id="produtoQtd" type="number" placeholder="Qtd">
+<button id="btnProduto">Adicionar</button>
 
 <h2>Venda</h2>
 <select id="clientes"></select>
 <select id="produtos"></select>
-<button onclick="addVenda('pago')">Pago</button>
-<button onclick="addVenda('fiado')">Fiado</button>
+<button id="btnPago">Pago</button>
+<button id="btnFiado">Fiado</button>
 
-<h2>Clientes</h2>
 <div id="lista"></div>
 
 <script>
@@ -71,14 +66,16 @@ let clientes = [];
 let produtos = [];
 let vendas = [];
 
+document.getElementById("btnCliente").addEventListener("click", addCliente);
+document.getElementById("btnProduto").addEventListener("click", addProduto);
+document.getElementById("btnPago").addEventListener("click", () => addVenda("pago"));
+document.getElementById("btnFiado").addEventListener("click", () => addVenda("fiado"));
+
 function addCliente(){
   let input = document.getElementById("clienteNome");
   let nome = input.value.trim();
 
-  if(!nome){
-    alert("Digite um nome");
-    return;
-  }
+  if(!nome) return alert("Digite um nome");
 
   clientes.push(nome);
   input.value = "";
@@ -91,8 +88,7 @@ function addProduto(){
   let qtd = parseInt(document.getElementById("produtoQtd").value);
 
   if(!nome || isNaN(preco) || isNaN(qtd)){
-    alert("Preencha tudo");
-    return;
+    return alert("Preencha tudo");
   }
 
   produtos.push({nome, preco, qtd});
@@ -105,8 +101,7 @@ function addVenda(tipo){
   let p = produtos[i];
 
   if(!p || p.qtd <= 0){
-    alert("Sem estoque");
-    return;
+    return alert("Sem estoque");
   }
 
   p.qtd--;
@@ -161,17 +156,19 @@ function atualizar(){
       }
     });
 
-    div.innerHTML = `<h3>${c}</h3><p>Total fiado: R$${total.toFixed(2)}</p>`;
+    div.innerHTML = `<h3>${c}</h3><p>Fiado: R$${total.toFixed(2)}</p>`;
 
     vendas.forEach((v,i)=>{
       if(v.cliente === c){
-        div.innerHTML += `
-          <p>
-            ${v.produto} - R$${v.preco}
-            <b class="${v.tipo}">${v.tipo}</b>
-            <button onclick="remover(${i})">❌</button>
-          </p>
+        let p = document.createElement("p");
+        p.innerHTML = `
+          ${v.produto} - R$${v.preco}
+          <b class="${v.tipo}">${v.tipo}</b>
+          <button>❌</button>
         `;
+
+        p.querySelector("button").addEventListener("click", () => remover(i));
+        div.appendChild(p);
       }
     });
 
