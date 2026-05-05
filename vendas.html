@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Vendas</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:Arial;}
+button, select { margin:5px; padding:10px; border-radius:8px; }
+.fiado { color:red; }
+.pago { color:lime; }
+</style>
+</head>
+
+<body>
+
+<button onclick="voltar()">⬅ Voltar</button>
+
+<h2>Venda</h2>
+
+<select id="clientes"></select>
+<select id="produtos"></select>
+
+<button id="pago">Pago</button>
+<button id="fiado">Fiado</button>
+
+<div id="lista"></div>
+
+<script>
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+let vendas = JSON.parse(localStorage.getItem("vendas")) || [];
+
+function salvar(){
+  localStorage.setItem("vendas", JSON.stringify(vendas));
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+}
+
+function carregarSelects(){
+  let cSel = document.getElementById("clientes");
+  let pSel = document.getElementById("produtos");
+
+  cSel.innerHTML = "";
+  pSel.innerHTML = "";
+
+  clientes.forEach(c=>{
+    let o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    cSel.appendChild(o);
+  });
+
+  produtos.forEach((p,i)=>{
+    let o = document.createElement("option");
+    o.value = i;
+    o.textContent = `${p.nome} R$${p.preco} [${p.qtd}]`;
+    pSel.appendChild(o);
+  });
+}
+
+document.getElementById("pago").addEventListener("click", ()=> vender("pago"));
+document.getElementById("fiado").addEventListener("click", ()=> vender("fiado"));
+
+function vender(tipo){
+  let cliente = document.getElementById("clientes").value;
+  let i = document.getElementById("produtos").value;
+  let p = produtos[i];
+
+  if(!p || p.qtd <= 0) return;
+
+  p.qtd--;
+
+  vendas.push({cliente, produto:p.nome, preco:p.preco, tipo});
+  salvar();
+  atualizar();
+}
+
+function atualizar(){
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  clientes.forEach(c=>{
+    let div = document.createElement("div");
+
+    let total = 0;
+
+    vendas.forEach(v=>{
+      if(v.cliente===c && v.tipo==="fiado"){
+        total += v.preco;
+      }
+    });
+
+    div.innerHTML = `<h3>${c}</h3>Fiado: R$${total.toFixed(2)}`;
+
+    lista.appendChild(div);
+  });
+}
+
+function voltar(){
+  window.location.href = "index.html";
+}
+
+carregarSelects();
+atualizar();
+</script>
+
+</body>
+</html>
