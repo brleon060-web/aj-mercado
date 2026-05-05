@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Produtos</title>
+<style>
+body { background:#111; color:white; text-align:center; font-family:Arial;}
+input, button { margin:5px; padding:10px; border-radius:8px; }
+</style>
+</head>
+
+<body>
+
+<button onclick="voltar()">⬅ Voltar</button>
+
+<h2>Produtos</h2>
+
+<input id="nome" placeholder="Nome">
+<input id="preco" type="number" placeholder="Preço">
+<input id="qtd" type="number" placeholder="Qtd">
+<button id="add">Adicionar</button>
+
+<div id="lista"></div>
+
+<script>
+let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+
+document.getElementById("add").addEventListener("click", ()=>{
+  let nome = document.getElementById("nome").value;
+  let preco = parseFloat(document.getElementById("preco").value);
+  let qtd = parseInt(document.getElementById("qtd").value);
+
+  if(!nome || isNaN(preco) || isNaN(qtd)) return;
+
+  produtos.push({nome, preco, qtd});
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  atualizar();
+});
+
+function atualizar(){
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  produtos.forEach(p=>{
+    let el = document.createElement("p");
+    el.textContent = `${p.nome} R$${p.preco} [${p.qtd}]`;
+    lista.appendChild(el);
+  });
+}
+
+function voltar(){
+  window.location.href = "index.html";
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
