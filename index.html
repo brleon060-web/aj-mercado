@@ -5,28 +5,56 @@
 <title>AJ Mercado</title>
 
 <style>
-body { font-family: Arial; background:#111; color:#fff; text-align:center;}
-input, select, button {margin:5px; padding:8px; border-radius:8px;}
-.card {background:#222; margin:10px; padding:10px; border-radius:10px;}
-.fiado {color:red;} .pago {color:lime;}
-</style>
-</head>
+body {
+  font-family: Arial;
+  background: #0f0f1a;
+  color: white;
+  text-align: center;
+}
 
+h1 { color: #b366ff; }
+
+input, select {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  background: purple;
+  color: white;
+  cursor: pointer;
+}
+
+.card {
+  background: #1c1c2e;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 12px;
+}
+
+.fiado { color: red; }
+.pago { color: lime; }
+</style>
+
+</head>
 <body>
 
-<h1>AJ Mercado</h1>
-
-<button onclick="baixar()">💾 Salvar Dados</button>
-<input type="file" onchange="carregar(event)">
+<h1>🛒 AJ Mercado (Allyson & Junior)</h1>
 
 <h2>Cliente</h2>
-<input id="clienteNome">
+<input id="clienteNome" placeholder="Nome do cliente">
 <button onclick="addCliente()">Adicionar</button>
 
 <h2>Produto</h2>
 <input id="produtoNome" placeholder="Nome">
 <input id="produtoPreco" type="number" placeholder="Preço">
-<input id="produtoQtd" type="number" placeholder="Qtd">
+<input id="produtoQtd" type="number" placeholder="Quantidade">
 <button onclick="addProduto()">Adicionar</button>
 
 <h2>Venda</h2>
@@ -35,6 +63,7 @@ input, select, button {margin:5px; padding:8px; border-radius:8px;}
 <button onclick="addVenda('pago')">Pago</button>
 <button onclick="addVenda('fiado')">Fiado</button>
 
+<h2>Clientes</h2>
 <div id="lista"></div>
 
 <script>
@@ -43,86 +72,53 @@ let produtos = [];
 let vendas = [];
 
 function addCliente(){
-  let nome = clienteNome.value.trim();
-  if(!nome) return;
+  let input = document.getElementById("clienteNome");
+  let nome = input.value.trim();
+
+  if(!nome){
+    alert("Digite um nome");
+    return;
+  }
+
   clientes.push(nome);
+  input.value = "";
   atualizar();
 }
 
 function addProduto(){
-  let nome = produtoNome.value;
-  let preco = parseFloat(produtoPreco.value);
-  let qtd = parseInt(produtoQtd.value);
+  let nome = document.getElementById("produtoNome").value;
+  let preco = parseFloat(document.getElementById("produtoPreco").value);
+  let qtd = parseInt(document.getElementById("produtoQtd").value);
 
-  if(!nome || isNaN(preco) || isNaN(qtd)) return;
+  if(!nome || isNaN(preco) || isNaN(qtd)){
+    alert("Preencha tudo");
+    return;
+  }
 
   produtos.push({nome, preco, qtd});
   atualizar();
 }
 
 function addVenda(tipo){
-  let c = clientesSelect.value;
-  let i = produtosSelect.value;
+  let cliente = document.getElementById("clientes").value;
+  let i = document.getElementById("produtos").value;
   let p = produtos[i];
 
-  if(!p || p.qtd<=0) return alert("Sem estoque");
+  if(!p || p.qtd <= 0){
+    alert("Sem estoque");
+    return;
+  }
 
   p.qtd--;
 
   vendas.push({
-    cliente:c,
-    produto:p.nome,
-    preco:p.preco,
+    cliente,
+    produto: p.nome,
+    preco: p.preco,
     tipo
   });
 
   atualizar();
-}
-
-function atualizar(){
-  clientesSelect.innerHTML="";
-  produtosSelect.innerHTML="";
-  lista.innerHTML="";
-
-  clientes.forEach(c=>{
-    let o=document.createElement("option");
-    o.value=c;
-    o.textContent=c;
-    clientesSelect.appendChild(o);
-  });
-
-  produtos.forEach((p,i)=>{
-    let o=document.createElement("option");
-    o.value=i;
-    o.textContent=`${p.nome} R$${p.preco} [${p.qtd}]`;
-    produtosSelect.appendChild(o);
-  });
-
-  clientes.forEach(c=>{
-    let div=document.createElement("div");
-    div.className="card";
-
-    let total=0;
-
-    vendas.forEach(v=>{
-      if(v.cliente===c && v.tipo==="fiado") total+=v.preco;
-    });
-
-    div.innerHTML=`<h3>${c}</h3>Fiado: R$${total.toFixed(2)}`;
-
-    vendas.forEach((v,i)=>{
-      if(v.cliente===c){
-        div.innerHTML+=`
-        <p>
-        ${v.produto} R$${v.preco}
-        <b class="${v.tipo}">${v.tipo}</b>
-        <button onclick="remover(${i})">X</button>
-        </p>`;
-      }
-    });
-
-    lista.appendChild(div);
-  });
 }
 
 function remover(i){
@@ -130,31 +126,60 @@ function remover(i){
   atualizar();
 }
 
-// 💾 salvar arquivo
-function baixar(){
-  let dados = {clientes, produtos, vendas};
-  let blob = new Blob([JSON.stringify(dados)], {type:"application/json"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "ajmercado.json";
-  a.click();
+function atualizar(){
+  let clientesSelect = document.getElementById("clientes");
+  let produtosSelect = document.getElementById("produtos");
+  let lista = document.getElementById("lista");
+
+  clientesSelect.innerHTML = "";
+  produtosSelect.innerHTML = "";
+  lista.innerHTML = "";
+
+  clientes.forEach(c=>{
+    let o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    clientesSelect.appendChild(o);
+  });
+
+  produtos.forEach((p,i)=>{
+    let o = document.createElement("option");
+    o.value = i;
+    o.textContent = `${p.nome} R$${p.preco} [${p.qtd}]`;
+    produtosSelect.appendChild(o);
+  });
+
+  clientes.forEach(c=>{
+    let div = document.createElement("div");
+    div.className = "card";
+
+    let total = 0;
+
+    vendas.forEach(v=>{
+      if(v.cliente === c && v.tipo === "fiado"){
+        total += v.preco;
+      }
+    });
+
+    div.innerHTML = `<h3>${c}</h3><p>Total fiado: R$${total.toFixed(2)}</p>`;
+
+    vendas.forEach((v,i)=>{
+      if(v.cliente === c){
+        div.innerHTML += `
+          <p>
+            ${v.produto} - R$${v.preco}
+            <b class="${v.tipo}">${v.tipo}</b>
+            <button onclick="remover(${i})">❌</button>
+          </p>
+        `;
+      }
+    });
+
+    lista.appendChild(div);
+  });
 }
 
-// 📂 carregar arquivo
-function carregar(e){
-  let file = e.target.files[0];
-  let reader = new FileReader();
-
-  reader.onload = function(){
-    let data = JSON.parse(reader.result);
-    clientes = data.clientes || [];
-    produtos = data.produtos || [];
-    vendas = data.vendas || [];
-    atualizar();
-  };
-
-  reader.readAsText(file);
-}
+atualizar();
 </script>
 
 </body>
